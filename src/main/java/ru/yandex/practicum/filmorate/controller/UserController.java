@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
@@ -23,7 +24,7 @@ public class UserController {
         log.info("Получен запрос на добавление пользователя" + user);
         if (checkUserInfo(user)) {
             user.setId(countId);
-            if (user.getName() == null || user.getName().isBlank()) {
+            if (StringUtils.isBlank(user.getName())) {
                 user.setName(user.getLogin());
             }
         }
@@ -42,7 +43,7 @@ public class UserController {
             if (!users.containsKey(userId)) {
                 throw new ValidationException("Пользователя с id:" + userId + " не существует");
             }
-            if (user.getName() == null || user.getName().isBlank()) {
+            if (StringUtils.isBlank(user.getName())) {
                 user.setName(user.getLogin());
             }
             users.put(userId, user);
