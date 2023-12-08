@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Required;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
@@ -50,6 +49,6 @@ public class FilmService {
                 .collect(Collectors.toList());
     }
     private int compareMoviesByPopular(Film f0, Film f1) {
-        return f0.getLikes().size() - f1.getLikes().size();
+        return f1.getLikes().size() - f0.getLikes().size();
     }
 }

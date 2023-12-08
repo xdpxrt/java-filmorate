@@ -5,10 +5,7 @@ import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Component
 public class InMemoryFilmStorage implements FilmStorage {
@@ -18,14 +15,22 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public void addMovie(Film film) {
         film.setId(countId);
+        film.setLikes(new HashSet<>());
         movies.put(countId++, film);
     }
 
     @Override
     public void updateMovie(Film film) {
-        if (movies.containsKey(film.getId())) {
-            movies.put(film.getId(), film);
-        } else throw new FilmNotFoundException(String.format("Фильма с id%d не существует", film.getId()));
+        int filmId = film.getId();
+        if (filmId < 1) {
+            throw new ValidationException("Неверно указан id");
+        }
+        if (!movies.containsKey(filmId)) {
+            throw new FilmNotFoundException(String.format("Фильма с id%d не существует", filmId));
+        }
+        Set<Integer> likes = movies.get(filmId).getLikes();
+        film.setLikes(likes);
+        movies.put(filmId, film);
     }
 
     @Override
@@ -34,10 +39,10 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Film getMovieById(int id) {
-        if (!movies.containsKey(id)) {
-            return null;
+    public Film getMovieById(int filmId) {
+        if (!movies.containsKey(filmId)) {
+            throw new FilmNotFoundException(String.format("Фильма с id%d не существует", filmId));
         }
-        return movies.get(id);
+        return movies.get(filmId);
     }
 }

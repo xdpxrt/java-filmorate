@@ -3,10 +3,14 @@ package ru.yandex.practicum.filmorate.controller;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
+import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
@@ -27,7 +31,9 @@ public class FilmControllerTest {
 
     @BeforeEach
     public void init() {
-        filmController = new FilmController(new InMemoryFilmStorage());
+        FilmStorage filmStorage = new InMemoryFilmStorage();
+        UserStorage userStorage = new InMemoryUserStorage();
+        filmController = new FilmController(filmStorage, new FilmService(filmStorage, userStorage));
     }
 
     @Test
@@ -96,7 +102,7 @@ public class FilmControllerTest {
         Film film = new Film("newName", "newDescription",
                 LocalDate.of(1990, 11, 11), 120);
         film.setId(1);
-        assertThrows(ValidationException.class,
+        assertThrows(FilmNotFoundException.class,
                 () -> filmController.updateMovie(film),
                 "Фильма с id:1 не существует");
     }
