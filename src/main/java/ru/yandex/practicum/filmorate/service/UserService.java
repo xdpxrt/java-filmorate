@@ -53,6 +53,22 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
+    public void addUser(User user) {
+        userStorage.addUser(user);
+    }
+
+    public void updateUser(User user) {
+        userStorage.addUser(user);
+    }
+
+    public List<User> getUsers() {
+        return userStorage.getUsers();
+    }
+
+    public User getUserById(int id) {
+        return userStorage.getUserById(id);
+    }
+
     private void userIsExist(int userId) {
         if (userStorage.getUserById(userId) == null) {
             throw new UserNotFoundException(String.format("Пользователя с id%d не существует", userId));

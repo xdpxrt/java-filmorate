@@ -49,6 +49,22 @@ public class FilmService {
                 .collect(Collectors.toList());
     }
 
+    public void addMovie(Film film) {
+        filmStorage.addMovie(film);
+    }
+
+    public void updateMovie(Film film) {
+        filmStorage.updateMovie(film);
+    }
+
+    public List<Film> getMovies() {
+        return filmStorage.getMovies();
+    }
+
+    public Film getMovieById(int filmId) {
+        return filmStorage.getMovieById(filmId);
+    }
+
     private int compareMoviesByPopular(Film f0, Film f1) {
         return f1.getLikes().size() - f0.getLikes().size();
     }

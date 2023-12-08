@@ -7,7 +7,6 @@ import ru.yandex.practicum.filmorate.exception.IncorrectParameterException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
-import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
 import javax.validation.Valid;
 import java.time.LocalDate;
@@ -15,61 +14,59 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping
+@RequestMapping("/films")
 public class FilmController {
     public static final LocalDate ZERO_DATE = LocalDate.of(1895, 12, 28);
-    private final FilmStorage filmStorage;
     private final FilmService filmService;
 
     @Autowired
-    public FilmController(FilmStorage filmStorage, FilmService filmService) {
-        this.filmStorage = filmStorage;
+    public FilmController(FilmService filmService) {
         this.filmService = filmService;
     }
 
-    @PostMapping("/films")
+    @PostMapping
     public Film addMovie(@Valid @RequestBody Film film) {
         log.info("Получен запрос на добавление фильма " + film);
         checkMovieInfo(film);
-        filmStorage.addMovie(film);
+        filmService.addMovie(film);
         return film;
     }
 
-    @PutMapping("/films")
+    @PutMapping
     public Film updateMovie(@Valid @RequestBody Film film) {
         log.info("Получен запрос на обновление фильма " + film);
         checkMovieInfo(film);
-        filmStorage.updateMovie(film);
+        filmService.updateMovie(film);
         return film;
     }
 
-    @GetMapping("/films")
+    @GetMapping
     public List<Film> getMovies() {
         log.info("Получен запрос на список фильмов");
-        return filmStorage.getMovies();
+        return filmService.getMovies();
     }
 
-    @GetMapping("/films/{id}")
+    @GetMapping("/{id}")
     public Film getMovieById(@PathVariable int id) {
         isAcceptable(id, "id");
-        return filmStorage.getMovieById(id);
+        return filmService.getMovieById(id);
     }
 
-    @PutMapping("/films/{id}/like/{userId}")
+    @PutMapping("/{id}/like/{userId}")
     public void addLike(@PathVariable(value = "id") int filmId, @PathVariable int userId) {
         isAcceptable(filmId, "filmId");
         isAcceptable(userId, "userId");
         filmService.addLike(filmId, userId);
     }
 
-    @DeleteMapping("/films/{id}/like/{userId}")
+    @DeleteMapping("/{id}/like/{userId}")
     public void removeLike(@PathVariable(value = "id") int filmId, @PathVariable int userId) {
         isAcceptable(filmId, "filmId");
         isAcceptable(userId, "userId");
         filmService.removeLike(filmId, userId);
     }
 
-    @GetMapping("/films/popular")
+    @GetMapping("/popular")
     public List<Film> getPopularMovies(@RequestParam(defaultValue = "10", required = false) int count) {
         isAcceptable(count, "count");
         return filmService.getPopularMovies(count);

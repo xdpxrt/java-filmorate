@@ -16,7 +16,6 @@ public class InMemoryUserStorage implements UserStorage {
     @Override
     public void addUser(User user) {
         user.setId(countId);
-        user.setFriends(new HashSet<>());
         if (StringUtils.isBlank(user.getName())) {
             user.setName(user.getLogin());
         }

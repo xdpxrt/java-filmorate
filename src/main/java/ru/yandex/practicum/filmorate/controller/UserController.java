@@ -7,54 +7,51 @@ import ru.yandex.practicum.filmorate.exception.IncorrectParameterException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
-import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import javax.validation.Valid;
 import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping
+@RequestMapping("/users")
 public class UserController {
-    private final UserStorage userStorage;
     private final UserService userService;
 
     @Autowired
-    public UserController(UserStorage userStorage, UserService userService) {
-        this.userStorage = userStorage;
+    public UserController(UserService userService) {
         this.userService = userService;
     }
 
-    @PostMapping("/users")
+    @PostMapping
     public User addUser(@Valid @RequestBody User user) {
         log.info("Получен запрос на добавление пользователя" + user);
         checkUserInfo(user);
-        userStorage.addUser(user);
+        userService.addUser(user);
         return user;
     }
 
-    @PutMapping("/users")
+    @PutMapping
     public User updateUser(@Valid @RequestBody User user) {
         log.info("Получен запрос на обновление пользователя" + user);
         checkUserInfo(user);
-        userStorage.updateUser(user);
+        userService.updateUser(user);
         return user;
     }
 
-    @GetMapping("/users")
+    @GetMapping
     public List<User> getUsers() {
         log.info("Получен запрос на список пользователей");
-        return userStorage.getUsers();
+        return userService.getUsers();
     }
 
-    @GetMapping("/users/{id}")
+    @GetMapping("/{id}")
     public User getUserById(@PathVariable int id) {
         log.info("Получен запрос на получение пользователя по id");
         isAcceptable(id, "id");
-        return userStorage.getUserById(id);
+        return userService.getUserById(id);
     }
 
-    @PutMapping("/users/{id}/friends/{friendId}")
+    @PutMapping("/{id}/friends/{friendId}")
     public void addFriend(@PathVariable int id, @PathVariable int friendId) {
         log.info("Получен запрос на добавление друга");
         isAcceptable(id, "id");
@@ -62,24 +59,22 @@ public class UserController {
         userService.addFriend(id, friendId);
     }
 
-    @DeleteMapping("/users/{id}/friends/{friendId}")
+    @DeleteMapping("/{id}/friends/{friendId}")
     public void removeFriend(@PathVariable int id, @PathVariable int friendId) {
         log.info("Получен запрос на удаление друга");
         isAcceptable(id, "id");
         isAcceptable(friendId, "friendId");
         userService.removeFriend(id, friendId);
-
     }
 
-    @GetMapping("/users/{id}/friends")
+    @GetMapping("/{id}/friends")
     public List<User> getFriends(@PathVariable int id) {
         log.info("Получен запрос на получение списка друзей");
         isAcceptable(id, "id");
         return userService.getFriends(id);
-
     }
 
-    @GetMapping("/users/{id}/friends/common/{otherId}")
+    @GetMapping("/{id}/friends/common/{otherId}")
     public List<User> getMutualFriends(@PathVariable int id, @PathVariable int otherId) {
         log.info("Получен запрос на получение списка общих друзей");
         isAcceptable(id, "id");

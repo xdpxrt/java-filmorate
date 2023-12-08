@@ -9,13 +9,12 @@ import java.util.*;
 
 @Component
 public class InMemoryFilmStorage implements FilmStorage {
-    private int countId = 1;
+    private static int countId = 1;
     private final Map<Integer, Film> movies = new HashMap<>();
 
     @Override
     public void addMovie(Film film) {
         film.setId(countId);
-        film.setLikes(new HashSet<>());
         movies.put(countId++, film);
     }
 
