@@ -4,6 +4,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
@@ -24,7 +26,7 @@ public class UserControllerTest {
 
     @BeforeEach
     public void init() {
-        userController = new UserController();
+        userController = new UserController(new InMemoryUserStorage());
     }
 
     @Test
@@ -75,8 +77,9 @@ public class UserControllerTest {
     public void userUpdateTest() {
         userController.addUser(new User("user@yandex.ru", "user", "User",
                 LocalDate.of(1991, 10, 10)));
-        user = new User(1, "newuser@yandex.ru", "newuser", "newUser",
+        user = new User("newuser@yandex.ru", "newuser", "newUser",
                 LocalDate.of(1991, 11, 10));
+        user.setId(1);
         userController.updateUser(user);
         violations = validator.validate(user);
         assertEquals(user, userController.getUsers().get(0));
@@ -85,8 +88,9 @@ public class UserControllerTest {
 
     @Test
     public void userUpdateUnknownTest() {
-        user = new User(1, "user@yandex.ru", "user", "User",
+        user = new User("user@yandex.ru", "user", "User",
                 LocalDate.of(1991, 10, 10));
+        user.setId(1);
         violations = validator.validate(user);
         assertEquals(0, violations.size());
         assertThrows(ValidationException.class,
