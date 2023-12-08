@@ -58,7 +58,7 @@ public class UserService {
     }
 
     public void updateUser(User user) {
-        userStorage.addUser(user);
+        userStorage.updateUser(user);
     }
 
     public List<User> getUsers() {
