@@ -1,70 +1,99 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.exception.IncorrectParameterException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
 
 import javax.validation.Valid;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @RestController
 @RequestMapping("/users")
 public class UserController {
-    private final Map<Integer, User> users = new HashMap<>();
-    private int countId = 1;
+    private final UserService userService;
+
+    @Autowired
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
 
     @PostMapping
     public User addUser(@Valid @RequestBody User user) {
         log.info("Получен запрос на добавление пользователя" + user);
-        if (checkUserInfo(user)) {
-            user.setId(countId);
-            if (StringUtils.isBlank(user.getName())) {
-                user.setName(user.getLogin());
-            }
-        }
-        users.put(countId++, user);
+        checkUserInfo(user);
+        userService.addUser(user);
         return user;
     }
 
     @PutMapping
     public User updateUser(@Valid @RequestBody User user) {
         log.info("Получен запрос на обновление пользователя" + user);
-        int userId;
-        if (checkUserInfo(user)) {
-            if (user.getId() > 0) {
-                userId = user.getId();
-            } else throw new ValidationException("Неверно указан id");
-            if (!users.containsKey(userId)) {
-                throw new ValidationException("Пользователя с id:" + userId + " не существует");
-            }
-            if (StringUtils.isBlank(user.getName())) {
-                user.setName(user.getLogin());
-            }
-            users.put(userId, user);
-        }
+        checkUserInfo(user);
+        userService.updateUser(user);
         return user;
     }
 
     @GetMapping
     public List<User> getUsers() {
-        log.info("Получен запрос на списко пользователей");
-
-        return new ArrayList<>(users.values());
+        log.info("Получен запрос на список пользователей");
+        return userService.getUsers();
     }
 
-    private boolean checkUserInfo(User user) throws ValidationException {
+    @GetMapping("/{id}")
+    public User getUserById(@PathVariable int id) {
+        log.info("Получен запрос на получение пользователя по id");
+        isAcceptable(id, "id");
+        return userService.getUserById(id);
+    }
+
+    @PutMapping("/{id}/friends/{friendId}")
+    public void addFriend(@PathVariable int id, @PathVariable int friendId) {
+        log.info("Получен запрос на добавление друга");
+        isAcceptable(id, "id");
+        isAcceptable(friendId, "friendId");
+        userService.addFriend(id, friendId);
+    }
+
+    @DeleteMapping("/{id}/friends/{friendId}")
+    public void removeFriend(@PathVariable int id, @PathVariable int friendId) {
+        log.info("Получен запрос на удаление друга");
+        isAcceptable(id, "id");
+        isAcceptable(friendId, "friendId");
+        userService.removeFriend(id, friendId);
+    }
+
+    @GetMapping("/{id}/friends")
+    public List<User> getFriends(@PathVariable int id) {
+        log.info("Получен запрос на получение списка друзей");
+        isAcceptable(id, "id");
+        return userService.getFriends(id);
+    }
+
+    @GetMapping("/{id}/friends/common/{otherId}")
+    public List<User> getMutualFriends(@PathVariable int id, @PathVariable int otherId) {
+        log.info("Получен запрос на получение списка общих друзей");
+        isAcceptable(id, "id");
+        isAcceptable(otherId, "otherId");
+        return userService.getMutualFriends(id, otherId);
+    }
+
+    private void isAcceptable(int id, String param) {
+        if (id < 1) {
+            throw new IncorrectParameterException(param);
+        }
+    }
+
+    private void checkUserInfo(User user) throws ValidationException {
         if (user == null) {
             throw new ValidationException("На входе пустой объект!");
         }
         if (user.getLogin().contains(" ")) {
             throw new ValidationException("Логин не должен содержать пробелы!");
         }
-        return true;
     }
 }
