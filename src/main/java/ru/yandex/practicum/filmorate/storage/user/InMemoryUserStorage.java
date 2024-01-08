@@ -1,42 +1,31 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 public class InMemoryUserStorage implements UserStorage {
     private int countId = 1;
     private final Map<Integer, User> users = new HashMap<>();
+    private final Map<Integer, Set<Integer>> friends = new HashMap<>();
 
     @Override
-    public void addUser(User user) {
+    public User addUser(User user) {
         user.setId(countId);
-        if (StringUtils.isBlank(user.getName())) {
-            user.setName(user.getLogin());
-        }
         users.put(countId++, user);
+        return user;
     }
 
     @Override
-    public void updateUser(User user) {
+    public User updateUser(User user) {
         int userId = user.getId();
-        if (userId <= 0) {
-            throw new ValidationException("Неверно указан id");
-        }
-        if (!users.containsKey(userId)) {
-            throw new UserNotFoundException(String.format("Пользователя с id%d не существует", userId));
-        }
-        if (StringUtils.isBlank(user.getName())) {
-            user.setName(user.getLogin());
-        }
-        Set<Integer> friends = users.get(userId).getFriends();
-        user.setFriends(friends);
+        isExist(userId);
         users.put(userId, user);
+        return user;
     }
 
     @Override
@@ -46,9 +35,48 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public User getUserById(int userId) {
+        isExist(userId);
+        return users.get(userId);
+    }
+
+    @Override
+    public void addFriend(int userId, int friendId) {
+        isExist(userId);
+        isExist(friendId);
+        friends.get(userId).add(friendId);
+        friends.get(friendId).add(userId);
+    }
+
+    @Override
+    public void removeFriend(int userId, int friendId) {
+        isExist(userId);
+        isExist(friendId);
+        friends.get(userId).remove(friendId);
+        friends.get(friendId).remove(userId);
+    }
+
+    @Override
+    public List<User> getFriends(int userId) {
+        isExist(userId);
+        List<Integer> userFriends = new ArrayList<>(friends.get(userId));
+        return users.values().stream()
+                .filter(user -> userFriends.contains(user.getId()))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<User> getMutualFriends(int user1Id, int user2Id) {
+        isExist(user1Id);
+        isExist(user2Id);
+        Set<Integer> user1Friends = friends.get(user1Id);
+        Set<Integer> user2Friends = friends.get(user2Id);
+        return user1Friends.stream().filter(user2Friends::contains)
+                .map(users::get).collect(Collectors.toList());
+    }
+
+    void isExist(int userId) {
         if (!users.containsKey(userId)) {
             throw new UserNotFoundException(String.format("Пользователя с id%d не существует", userId));
         }
-        return users.get(userId);
     }
 }

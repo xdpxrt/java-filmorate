@@ -17,6 +17,7 @@ import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 import java.time.LocalDate;
+import java.util.Date;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -32,8 +33,7 @@ public class FilmControllerTest {
     @BeforeEach
     public void init() {
         FilmStorage filmStorage = new InMemoryFilmStorage();
-        UserStorage userStorage = new InMemoryUserStorage();
-        filmController = new FilmController(new FilmService(filmStorage, userStorage));
+        filmController = new FilmController(new FilmService(filmStorage));
     }
 
     @Test

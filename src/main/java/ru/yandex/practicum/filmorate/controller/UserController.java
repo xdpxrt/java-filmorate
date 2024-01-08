@@ -3,7 +3,7 @@ package ru.yandex.practicum.filmorate.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.IncorrectParameterException;
+import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
@@ -84,7 +84,7 @@ public class UserController {
 
     private void isAcceptable(int id, String param) {
         if (id < 1) {
-            throw new IncorrectParameterException(param);
+            throw new UserNotFoundException(param);
         }
     }
 

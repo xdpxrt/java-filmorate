@@ -1,16 +1,16 @@
 package ru.yandex.practicum.filmorate.model;
 
-import lombok.Data;
+import lombok.*;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 @Data
+@RequiredArgsConstructor
 public class Film {
     private int id;
     @NotBlank
@@ -23,5 +23,15 @@ public class Film {
     @NotNull
     @Positive
     private final int duration;
-    private Set<Integer> likes = new HashSet<>();
+    private MPA mpa;
+    private List<Genre> genres = new ArrayList<>();
+
+    public Map<String, Object> toMap() {
+        Map<String, Object> values = new HashMap<>();
+        values.put("title", name);
+        values.put("description", description);
+        values.put("release_date", releaseDate);
+        values.put("duration", duration);
+        return values;
+    }
 }
