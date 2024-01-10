@@ -6,10 +6,9 @@ target/
 *.jar
 *.class
 *.DS_Store
-*.xml
 /mvnw
 /mvnw.cmd
-/db/
+db/**
 
 ### STS ###
 .apt_generated
