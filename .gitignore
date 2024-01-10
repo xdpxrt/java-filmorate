@@ -8,7 +8,7 @@ target/
 *.DS_Store
 /mvnw
 /mvnw.cmd
-/db
+/db/
 
 ### STS ###
 .apt_generated
