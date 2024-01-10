@@ -35,7 +35,7 @@ public class UserDbStorage implements UserStorage {
     public User updateUser(User user) {
         String sql = "UPDATE users SET login = ?, name = ?, email = ?, birthday = ? where id = ?";
         jdbcTemplate.update(sql, user.getLogin(), user.getName(), user.getEmail(), user.getBirthday(), user.getId());
-        return user;
+        return getUserById(user.getId());
     }
 
     @Override
@@ -52,22 +52,29 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public void addFriend(int userId, int friendId) {
+        getUserById(userId);
+        getUserById(friendId);
         jdbcTemplate.update("MERGE INTO friends (user_id, friend_id) VALUES (?, ?)", userId, friendId);
     }
 
     @Override
     public void removeFriend(int userId, int friendId) {
+        getUserById(userId);
+        getUserById(friendId);
         jdbcTemplate.update("DELETE FROM friends WHERE user_id = ? AND friend_id = ?", userId, friendId);
     }
 
     @Override
     public List<User> getFriends(int userId) {
+        getUserById(userId);
         String sql = "SELECT u.* FROM friends AS f JOIN users AS u ON f.friend_id = u.id WHERE f.user_id = ?";
         return jdbcTemplate.query(sql, this::userRow, userId);
     }
 
     @Override
     public List<User> getMutualFriends(int user1Id, int user2Id) {
+        getUserById(user1Id);
+        getUserById(user2Id);
         String sql = "SELECT u.* FROM users AS u " +
                 "WHERE u.id IN (" +
                 "SELECT f.friend_id FROM friends AS f " +
