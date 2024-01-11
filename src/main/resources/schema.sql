@@ -29,6 +29,9 @@ CREATE TABLE IF NOT EXISTS users (
     email varchar NOT NULL,
     birthday date NOT NULL);
 
+CREATE UNIQUE INDEX IF NOT EXISTS USER_EMAIL_UINDEX on users (email);
+CREATE UNIQUE INDEX IF NOT EXISTS USER_LOGIN_UINDEX on users (login);
+
 CREATE TABLE IF NOT EXISTS films_likes (
     film_id INTEGER REFERENCES films (id),
     user_id INTEGER REFERENCES users (id),

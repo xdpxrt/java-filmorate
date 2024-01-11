@@ -15,6 +15,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Slf4j
+@Validated
 @RestController
 @RequestMapping("/films")
 public class FilmController {
@@ -68,7 +69,6 @@ public class FilmController {
         filmService.removeLike(filmId, userId);
     }
 
-    @Validated
     @GetMapping("/popular")
     public List<Film> getPopularMovies(@RequestParam(defaultValue = "10") @Positive int count) {
         log.info("Получен запрос на получение списка популярных фильмов");
