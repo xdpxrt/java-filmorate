@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.annotation.DirtiesContext;
-import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.MPA;
@@ -55,7 +55,7 @@ public class FilmDbStorageTest {
 
     @Test
     public void getMovieWithWrongIdTest() {
-        assertThrows(FilmNotFoundException.class, () -> filmDbStorage.getMovieById(0), "Фильм с id0 не найден");
+        assertThrows(NotFoundException.class, () -> filmDbStorage.getMovieById(0), "Фильм с id0 не найден");
     }
 
     @Test
@@ -79,7 +79,7 @@ public class FilmDbStorageTest {
                 LocalDate.of(1990, 9, 10), 120);
         newFilm.setMpa(new MPA(2, "PG"));
         newFilm.setId(2);
-        assertThrows(FilmNotFoundException.class, () ->
+        assertThrows(NotFoundException.class, () ->
                 filmDbStorage.updateMovie(newFilm), "Фильм с id2 не найден");
     }
 

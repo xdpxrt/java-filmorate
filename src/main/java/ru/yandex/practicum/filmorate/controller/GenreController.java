@@ -25,7 +25,7 @@ public class GenreController {
 
     @GetMapping("/{id}")
     public Genre getGenre(@PathVariable int id) {
-        log.info("Получен запрос на получение жанра по id: " + id);
+        log.info("Получен запрос на получение жанра по id:{}", id);
         if (id < 1) {
             throw new IncorrectParameterException("id");
         }

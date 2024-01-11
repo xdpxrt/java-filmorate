@@ -2,13 +2,15 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Positive;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -26,14 +28,14 @@ public class FilmController {
 
     @PostMapping
     public Film addMovie(@Valid @RequestBody Film film) {
-        log.info("Получен запрос на добавление фильма " + film);
+        log.info("Получен запрос на добавление фильма {}", film);
         checkMovieInfo(film);
         return filmService.addMovie(film);
     }
 
     @PutMapping
     public Film updateMovie(@Valid @RequestBody Film film) {
-        log.info("Получен запрос на обновление фильма " + film);
+        log.info("Получен запрос на обновление фильма {}", film);
         checkMovieInfo(film);
         return filmService.updateMovie(film);
     }
@@ -66,16 +68,16 @@ public class FilmController {
         filmService.removeLike(filmId, userId);
     }
 
+    @Validated
     @GetMapping("/popular")
-    public List<Film> getPopularMovies(@RequestParam(defaultValue = "10", required = false) int count) {
-        isAcceptable(count, "count");
+    public List<Film> getPopularMovies(@RequestParam(defaultValue = "10") @Positive int count) {
         log.info("Получен запрос на получение списка популярных фильмов");
         return filmService.getPopularMovies(count);
     }
 
     private void isAcceptable(int id, String param) {
         if (id < 1) {
-            throw new FilmNotFoundException(param);
+            throw new NotFoundException(param);
         }
     }
 

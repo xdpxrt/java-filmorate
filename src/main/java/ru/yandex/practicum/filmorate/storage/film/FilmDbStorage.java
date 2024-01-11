@@ -2,21 +2,20 @@ package ru.yandex.practicum.filmorate.storage.film;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.MPA;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Primary
 @Component
@@ -61,27 +60,7 @@ public class FilmDbStorage implements FilmStorage {
                 "JOIN films_mpa AS fm ON f.id = fm.film_id " +
                 "JOIN mpa AS m ON fm.mpa_id = m.id";
         List<Film> movies = jdbcTemplate.query(sqlMovies, this::filmRow);
-        Map<Integer, List<Genre>> filmsGenres = new HashMap<>();
-        String sqlGenres = "SELECT fg.film_id AS filmId, g.id AS genreId, g.name AS genreName " +
-                "FROM films_genres AS fg " +
-                "JOIN genres AS g ON fg.genre_id = g.id";
-        SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sqlGenres);
-        while (sqlRowSet.next()) {
-            int filmId = sqlRowSet.getInt("FILMID");
-            int genreId = sqlRowSet.getInt("GENREID");
-            String genreName = sqlRowSet.getString("GENRENAME");
-            Genre genre = new Genre(genreId, genreName);
-            if (!filmsGenres.containsKey(filmId)) {
-                filmsGenres.put(filmId, new ArrayList<>());
-            }
-            filmsGenres.get(filmId).add(genre);
-        }
-        for (Film film : movies) {
-            if (filmsGenres.containsKey(film.getId())) {
-                film.setGenres(filmsGenres.get(film.getId()));
-            }
-        }
-        return movies;
+        return getMoviesWithGenres(movies);
     }
 
     @Override
@@ -96,7 +75,7 @@ public class FilmDbStorage implements FilmStorage {
                 "JOIN genres AS g ON fg.genre_id = g.id " +
                 "WHERE fg.film_id = ?";
         Film film = jdbcTemplate.query(sql, this::filmRow, id).stream().findAny().orElseThrow(() ->
-                new FilmNotFoundException(String.format("Фильм с id%d не найден", id)));
+                new NotFoundException(String.format("Фильм с id%d не найден", id)));
         List<Genre> genres = jdbcTemplate.query(sqlGenres, this::genreRow, id);
         if (film != null) {
             film.setGenres(genres);
@@ -127,13 +106,13 @@ public class FilmDbStorage implements FilmStorage {
         if (popularFilms.isEmpty()) {
             return getMovies();
         }
-        return popularFilms;
+        return getMoviesWithGenres(popularFilms);
     }
 
     public void movieExist(int id) {
         jdbcTemplate.query("SELECT f.* FROM films AS f WHERE f.id = ?", this::rawFilmRow, id)
                 .stream().findAny().orElseThrow(() ->
-                        new FilmNotFoundException(String.format("Фильм с id%d не найден", id)));
+                        new NotFoundException(String.format("Фильм с id%d не найден", id)));
     }
 
     private Film filmRow(ResultSet rs, int rowNum) throws SQLException {
@@ -155,13 +134,51 @@ public class FilmDbStorage implements FilmStorage {
         return new Genre(rs.getInt("id"), rs.getString("name"));
     }
 
-    private void insertGenres(Film film) {
-        String sqlGenre = "MERGE INTO films_genres (film_id, genre_id) VALUES (?, ?)";
-        if (!film.getGenres().isEmpty()) {
-            for (Genre genre : film.getGenres()) {
-                jdbcTemplate.update(sqlGenre, film.getId(), genre.getId());
+    private List<Film> getMoviesWithGenres(List<Film> movies) {
+        List<Integer> moviesId = new ArrayList<>();
+        for (Film film : movies) {
+            moviesId.add(film.getId());
+        }
+        Map<Integer, List<Genre>> genres = new HashMap<>();
+        String inSql = String.join(",", Collections.nCopies(moviesId.size(), "?"));
+        String sqlGenres = String.format("SELECT fg.film_id AS filmId, g.id AS genreId, g.name AS genreName " +
+                "FROM films_genres AS fg " +
+                "JOIN genres AS g ON fg.genre_id = g.id " +
+                "WHERE fg.film_id IN (%s)", inSql);
+        SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sqlGenres, moviesId.toArray());
+        while (sqlRowSet.next()) {
+            int filmId = sqlRowSet.getInt("FILMID");
+            int genreId = sqlRowSet.getInt("GENREID");
+            String genreName = sqlRowSet.getString("GENRENAME");
+            Genre genre = new Genre(genreId, genreName);
+            if (!genres.containsKey(filmId)) {
+                genres.put(filmId, new ArrayList<>());
+            }
+            genres.get(filmId).add(genre);
+        }
+        for (Film film : movies) {
+            if (genres.containsKey(film.getId())) {
+                film.setGenres(genres.get(film.getId()));
             }
         }
+        return movies;
+    }
+
+    private void insertGenres(Film film) {
+        List<Genre> genres = film.getGenres();
+        String sqlGenre = "MERGE INTO films_genres (film_id, genre_id) VALUES (?, ?)";
+        jdbcTemplate.batchUpdate(sqlGenre, new BatchPreparedStatementSetter() {
+            @Override
+            public void setValues(PreparedStatement ps, int i) throws SQLException {
+                ps.setInt(1, film.getId());
+                ps.setInt(2, genres.get(i).getId());
+            }
+
+            @Override
+            public int getBatchSize() {
+                return genres.size();
+            }
+        });
     }
 }
 

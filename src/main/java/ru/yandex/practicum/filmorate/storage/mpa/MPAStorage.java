@@ -4,7 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dao.MPADao;
-import ru.yandex.practicum.filmorate.exception.MPANotFoundException;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.MPA;
 
 import java.sql.ResultSet;
@@ -23,7 +23,7 @@ public class MPAStorage implements MPADao {
     public MPA getMPA(int mpaId) {
         String sql = "SELECT * FROM mpa WHERE id = ?";
         return jdbcTemplate.query(sql, this::mapRow, mpaId).stream().findAny().orElseThrow(() ->
-                new MPANotFoundException(String.format("Рейтинга с id%d не существует", mpaId)));
+                new NotFoundException(String.format("Рейтинга с id%d не существует", mpaId)));
 
     }
 

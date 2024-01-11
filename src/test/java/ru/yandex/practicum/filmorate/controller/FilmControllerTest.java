@@ -3,7 +3,7 @@ package ru.yandex.practicum.filmorate.controller;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
@@ -99,7 +99,7 @@ public class FilmControllerTest {
         Film film = new Film("newName", "newDescription",
                 LocalDate.of(1990, 11, 11), 120);
         film.setId(1);
-        assertThrows(FilmNotFoundException.class,
+        assertThrows(NotFoundException.class,
                 () -> filmController.updateMovie(film),
                 "Фильма с id:1 не существует");
     }

@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.annotation.DirtiesContext;
-import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
@@ -49,7 +49,7 @@ public class UserDbStorageTest {
     public void updateUserWrongIdTest() {
         userDbStorage.addUser(user);
         user.setId(2);
-        assertThrows(UserNotFoundException.class,
+        assertThrows(NotFoundException.class,
                 () -> userDbStorage.updateUser(user), "Пользователь с id2 не найден");
     }
 
@@ -73,7 +73,7 @@ public class UserDbStorageTest {
 
     @Test
     public void getUserByIdWrongIdTest() {
-        assertThrows(UserNotFoundException.class,
+        assertThrows(NotFoundException.class,
                 () -> userDbStorage.getUserById(1), "Пользователь с id1 не найден");
     }
 
@@ -91,14 +91,14 @@ public class UserDbStorageTest {
 
     @Test
     public void addFriendWrongUserIdTest() {
-        assertThrows(UserNotFoundException.class,
+        assertThrows(NotFoundException.class,
                 () -> userDbStorage.addFriend(1, 2), "Пользователь с id1 не найден");
     }
 
     @Test
     public void addFriendWrongFriendIdTest() {
         userDbStorage.addUser(user);
-        assertThrows(UserNotFoundException.class,
+        assertThrows(NotFoundException.class,
                 () -> userDbStorage.addFriend(1, 2), "Пользователь с id2 не найден");
     }
 
@@ -116,14 +116,14 @@ public class UserDbStorageTest {
 
     @Test
     public void removeFriendWrongUserIdTest() {
-        assertThrows(UserNotFoundException.class,
+        assertThrows(NotFoundException.class,
                 () -> userDbStorage.removeFriend(1, 2), "Пользователь с id1 не найден");
     }
 
     @Test
     public void removeFriendWrongFriendIdTest() {
         userDbStorage.addUser(user);
-        assertThrows(UserNotFoundException.class,
+        assertThrows(NotFoundException.class,
                 () -> userDbStorage.removeFriend(1, 2), "Пользователь с id2 не найден");
     }
 

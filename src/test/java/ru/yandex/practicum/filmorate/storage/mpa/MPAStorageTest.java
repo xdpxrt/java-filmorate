@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.jdbc.core.JdbcTemplate;
-import ru.yandex.practicum.filmorate.exception.MPANotFoundException;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.MPA;
 
 import java.util.List;
@@ -33,7 +33,7 @@ public class MPAStorageTest {
 
     @Test
     public void getMPAByIdWithWrongIdTest() {
-        assertThrows(MPANotFoundException.class,
+        assertThrows(NotFoundException.class,
                 () -> mpaStorage.getMPA(0), "Рейтинга с id0 не существует");
     }
 

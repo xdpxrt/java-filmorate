@@ -26,7 +26,7 @@ public class MPAController {
 
     @GetMapping("/{id}")
     public MPA getMPA(@PathVariable int id) {
-        log.info("Получен запрос на получение рейтинга по id: " + id);
+        log.info("Получен запрос на получение рейтинга по id:{}", id);
         if (id < 1) {
             throw new IncorrectParameterException("id");
         }

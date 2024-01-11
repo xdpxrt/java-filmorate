@@ -4,7 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dao.GenreDao;
-import ru.yandex.practicum.filmorate.exception.GenreNotFoundException;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Genre;
 
 import java.sql.ResultSet;
@@ -24,7 +24,7 @@ public class GenreStorage implements GenreDao {
     public Genre getGenre(int id) {
         String sql = "SELECT * FROM genres WHERE id = ?";
         return jdbcTemplate.query(sql, this::genreRow, id).stream().findAny().orElseThrow(() ->
-                new GenreNotFoundException(String.format("Жанра с id%d не существует", id)));
+                new NotFoundException(String.format("Жанра с id%d не существует", id)));
     }
 
     @Override
