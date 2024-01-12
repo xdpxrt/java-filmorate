@@ -33,8 +33,6 @@ public class FilmDbStorage implements FilmStorage {
                 .usingGeneratedKeyColumns("id");
         int filmId = simpleJdbcInsert.executeAndReturnKey(film.toMap()).intValue();
         film.setId(filmId);
-        String sqlMPA = "INSERT INTO films_mpa (film_id, mpa_id) VALUES (?, ?)";
-        jdbcTemplate.update(sqlMPA, filmId, film.getMpa().getId());
         insertGenres(film);
         return film;
     }
@@ -42,11 +40,9 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Film updateMovie(Film film) {
         String sqlFilmUpdate =
-                "UPDATE films SET title = ?, description = ?, release_date = ?, duration = ? " + "where id = ?";
+                "UPDATE films SET title = ?, description = ?, release_date = ?, duration = ?, mpa_id = ? WHERE id = ?";
         jdbcTemplate.update(sqlFilmUpdate, film.getName(), film.getDescription(), film.getReleaseDate(),
-                film.getDuration(), film.getId());
-        String sqlMPAUpdate = "UPDATE films_mpa SET mpa_id = ? WHERE film_id = ?";
-        jdbcTemplate.update(sqlMPAUpdate, film.getMpa().getId(), film.getId());
+                film.getDuration(), film.getMpa().getId(), film.getId());
         String sqlDeleteGenres = "DELETE FROM films_genres WHERE film_id = ?";
         jdbcTemplate.update(sqlDeleteGenres, film.getId());
         insertGenres(film);
@@ -57,8 +53,7 @@ public class FilmDbStorage implements FilmStorage {
     public List<Film> getMovies() {
         String sqlMovies = "SELECT f.*, m.id AS mpaId, m.name AS mpaName " +
                 "FROM films AS f " +
-                "JOIN films_mpa AS fm ON f.id = fm.film_id " +
-                "JOIN mpa AS m ON fm.mpa_id = m.id";
+                "JOIN mpa AS m ON f.mpa_id = m.id";
         List<Film> movies = jdbcTemplate.query(sqlMovies, this::filmRow);
         return getMoviesWithGenres(movies);
     }
@@ -67,20 +62,11 @@ public class FilmDbStorage implements FilmStorage {
     public Film getMovieById(int id) {
         String sql = "SELECT f.*, m.id AS mpaId, m.name AS mpaName " +
                 "FROM films AS f " +
-                "JOIN films_mpa AS fm ON f.id = fm.film_id " +
-                "JOIN mpa AS m ON fm.mpa_id = m.id " +
+                "JOIN mpa AS m ON f.mpa_id = m.id " +
                 "WHERE f.id = ?";
-        String sqlGenres = "SELECT g.id AS genreId, g.name AS genreName " +
-                "FROM films_genres AS fg " +
-                "JOIN genres AS g ON fg.genre_id = g.id " +
-                "WHERE fg.film_id = ?";
         Film film = jdbcTemplate.query(sql, this::filmRow, id).stream().findAny().orElseThrow(() ->
                 new NotFoundException(String.format("Фильм с id%d не найден", id)));
-        List<Genre> genres = jdbcTemplate.query(sqlGenres, this::genreRow, id);
-        if (film != null) {
-            film.setGenres(genres);
-        }
-        return film;
+        return getMoviesWithGenres(List.of(film)).get(0);
     }
 
     @Override
@@ -98,8 +84,7 @@ public class FilmDbStorage implements FilmStorage {
         String sql = "SELECT f.*, m.id AS mpaId, m.name AS mpaName " +
                 "FROM films AS f " +
                 "JOIN films_likes AS fl ON f.ID = fl.film_id " +
-                "JOIN films_mpa AS fm ON f.id = fm.film_id " +
-                "JOIN mpa AS m ON fm.mpa_id = m.id " +
+                "JOIN mpa AS m ON f.mpa_id = m.id " +
                 "GROUP BY f.id " +
                 "ORDER BY COUNT (fl.user_id) DESC LIMIT ?";
         List<Film> popularFilms = jdbcTemplate.query(sql, this::filmRow, count);
@@ -139,7 +124,7 @@ public class FilmDbStorage implements FilmStorage {
         for (Film film : movies) {
             moviesId.add(film.getId());
         }
-        Map<Integer, List<Genre>> genres = new HashMap<>();
+        Map<Integer, LinkedHashSet<Genre>> genres = new HashMap<>();
         String inSql = String.join(",", Collections.nCopies(moviesId.size(), "?"));
         String sqlGenres = String.format("SELECT fg.film_id AS filmId, g.id AS genreId, g.name AS genreName " +
                 "FROM films_genres AS fg " +
@@ -152,7 +137,7 @@ public class FilmDbStorage implements FilmStorage {
             String genreName = sqlRowSet.getString("GENRENAME");
             Genre genre = new Genre(genreId, genreName);
             if (!genres.containsKey(filmId)) {
-                genres.put(filmId, new ArrayList<>());
+                genres.put(filmId, new LinkedHashSet<>());
             }
             genres.get(filmId).add(genre);
         }
@@ -165,7 +150,7 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     private void insertGenres(Film film) {
-        List<Genre> genres = film.getGenres();
+        List<Genre> genres = new ArrayList<>(film.getGenres());
         String sqlGenre = "MERGE INTO films_genres (film_id, genre_id) VALUES (?, ?)";
         jdbcTemplate.batchUpdate(sqlGenre, new BatchPreparedStatementSetter() {
             @Override

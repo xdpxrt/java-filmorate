@@ -18,17 +18,13 @@ public class UserService {
     }
 
     public User addUser(User user) {
-        if (StringUtils.isBlank(user.getName())) {
-            user.setName(user.getLogin());
-        }
+        checkName(user);
         return userStorage.addUser(user);
     }
 
     public User updateUser(User user) {
         userStorage.getUserById(user.getId());
-        if (StringUtils.isBlank(user.getName())) {
-            user.setName(user.getLogin());
-        }
+        checkName(user);
         return userStorage.updateUser(user);
     }
 
@@ -61,5 +57,11 @@ public class UserService {
         userStorage.getUserById(user1Id);
         userStorage.getUserById(user2Id);
         return userStorage.getMutualFriends(user1Id, user2Id);
+    }
+
+    private void checkName(User user) {
+        if (StringUtils.isBlank(user.getName())) {
+            user.setName(user.getLogin());
+        }
     }
 }

@@ -15,7 +15,7 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserDbStorage;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -45,7 +45,7 @@ public class FilmDbStorageTest {
 
     @Test
     public void getMovieByIdTest() {
-        List<Genre> genres = new ArrayList<>();
+        LinkedHashSet<Genre> genres = new LinkedHashSet<>();
         genres.add(new Genre(1, "Комедия"));
         genres.add(new Genre(6, "Боевик"));
         film.setGenres(genres);
@@ -64,7 +64,7 @@ public class FilmDbStorageTest {
         Film newFilm = new Film("newName", "newDescription",
                 LocalDate.of(1990, 9, 10), 120);
         newFilm.setMpa(new MPA(2, "PG"));
-        List<Genre> genres = new ArrayList<>();
+        LinkedHashSet<Genre> genres = new LinkedHashSet<>();
         genres.add(new Genre(1, "Комедия"));
         genres.add(new Genre(6, "Боевик"));
         newFilm.setGenres(genres);
@@ -89,7 +89,7 @@ public class FilmDbStorageTest {
         Film newFilm = new Film("newName", "newDescription",
                 LocalDate.of(1990, 9, 10), 120);
         newFilm.setMpa(new MPA(2, "PG"));
-        List<Genre> genres = new ArrayList<>();
+        LinkedHashSet<Genre> genres = new LinkedHashSet<>();
         genres.add(new Genre(1, "Комедия"));
         genres.add(new Genre(6, "Боевик"));
         newFilm.setGenres(genres);

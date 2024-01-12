@@ -19,7 +19,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/films")
 public class FilmController {
-    public static final LocalDate ZERO_DATE = LocalDate.of(1895, 12, 28);
+    //    public static final LocalDate ZERO_DATE = LocalDate.of(1895, 12, 28);
     private final FilmService filmService;
 
     @Autowired
@@ -85,8 +85,8 @@ public class FilmController {
         if (film == null) {
             throw new ValidationException("На входе пустой объект!");
         }
-        if (film.getReleaseDate().isBefore(ZERO_DATE)) {
-            throw new ValidationException("Неверно указана дата выпуска!");
-        }
+//        if (film.getReleaseDate().isBefore(ZERO_DATE)) {
+//            throw new ValidationException("Неверно указана дата выпуска!");
+//        }
     }
 }

@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.model;
 
 import lombok.*;
+import ru.yandex.practicum.filmorate.storage.validator.DateBoundary;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -18,13 +19,13 @@ public class Film {
     @Size(max = 200)
     @NotNull
     private final String description;
-    @NotNull
+    @DateBoundary("1985-12-28")
     private final LocalDate releaseDate;
-    @NotNull
     @Positive
     private final int duration;
+    @NotNull
     private MPA mpa;
-    private List<Genre> genres = new ArrayList<>();
+    private LinkedHashSet<Genre> genres = new LinkedHashSet<>();
 
     public Map<String, Object> toMap() {
         Map<String, Object> values = new HashMap<>();
@@ -32,6 +33,7 @@ public class Film {
         values.put("description", description);
         values.put("release_date", releaseDate);
         values.put("duration", duration);
+        values.put("mpa_id", mpa.getId());
         return values;
     }
 }

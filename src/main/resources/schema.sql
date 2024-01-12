@@ -3,15 +3,12 @@ CREATE TABLE IF NOT EXISTS films (
 	title varchar(50) NOT NULL,
 	description varchar(200) NOT NULL,
 	release_date date NOT NULL,
-	duration INTEGER NOT NULL);
+	duration INTEGER NOT NULL,
+	mpa_id INTEGER NOT NULL);
 
 CREATE TABLE IF NOT EXISTS mpa (
     id INTEGER PRIMARY KEY,
     name varchar(50) NOT NULL);
-
-CREATE TABLE IF NOT EXISTS films_mpa (
-    film_id INTEGER REFERENCES films (id),
-    mpa_id INTEGER REFERENCES mpa (id));
 
 CREATE TABLE IF NOT EXISTS genres (
     id INTEGER PRIMARY KEY,
