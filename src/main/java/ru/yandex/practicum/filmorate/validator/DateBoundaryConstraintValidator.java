@@ -1,12 +1,13 @@
-package ru.yandex.practicum.filmorate.storage.validator;
+package ru.yandex.practicum.filmorate.validator;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
+import javax.validation.ValidationException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
 public class DateBoundaryConstraintValidator implements ConstraintValidator<DateBoundary, LocalDate> {
-    final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MMM-dd");
+    final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     private LocalDate annotationDate;
 
@@ -20,7 +21,8 @@ public class DateBoundaryConstraintValidator implements ConstraintValidator<Date
         if (target == null) {
             return false;
         }
-        return target.isAfter(annotationDate);
+        if (target.isAfter(annotationDate)) {
+            return true;
+        } else throw new ValidationException("Дата выпуска должна быть позже 1895-12-28");
     }
-
 }

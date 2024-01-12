@@ -1,9 +1,8 @@
-package ru.yandex.practicum.filmorate.storage.validator;
+package ru.yandex.practicum.filmorate.validator;
 
 import javax.validation.Constraint;
 import javax.validation.Payload;
 import java.lang.annotation.*;
-import java.time.LocalDate;
 
 @Documented
 @Constraint(validatedBy = DateBoundaryConstraintValidator.class)

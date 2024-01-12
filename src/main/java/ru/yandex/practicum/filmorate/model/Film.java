@@ -1,7 +1,7 @@
 package ru.yandex.practicum.filmorate.model;
 
 import lombok.*;
-import ru.yandex.practicum.filmorate.storage.validator.DateBoundary;
+import ru.yandex.practicum.filmorate.validator.DateBoundary;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -19,7 +19,7 @@ public class Film {
     @Size(max = 200)
     @NotNull
     private final String description;
-    @DateBoundary("1985-12-28")
+    @DateBoundary("1895-12-28")
     private final LocalDate releaseDate;
     @Positive
     private final int duration;

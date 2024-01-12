@@ -10,7 +10,6 @@ import ru.yandex.practicum.filmorate.exception.IncorrectParameterException;
 import ru.yandex.practicum.filmorate.model.MPA;
 import ru.yandex.practicum.filmorate.service.MPAService;
 
-import javax.validation.constraints.Positive;
 import java.util.List;
 
 @Slf4j

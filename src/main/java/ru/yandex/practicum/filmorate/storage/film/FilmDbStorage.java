@@ -15,7 +15,12 @@ import ru.yandex.practicum.filmorate.model.MPA;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Primary
 @Component
@@ -115,38 +120,22 @@ public class FilmDbStorage implements FilmStorage {
         return film;
     }
 
-    private Genre genreRow(ResultSet rs, int rowNum) throws SQLException {
-        return new Genre(rs.getInt("id"), rs.getString("name"));
-    }
-
     private List<Film> getMoviesWithGenres(List<Film> movies) {
-        List<Integer> moviesId = new ArrayList<>();
-        for (Film film : movies) {
-            moviesId.add(film.getId());
-        }
-        Map<Integer, LinkedHashSet<Genre>> genres = new HashMap<>();
-        String inSql = String.join(",", Collections.nCopies(moviesId.size(), "?"));
+        final Map<Integer, Film> moviesMap = movies.stream().collect(Collectors.toMap(Film::getId, Function.identity()));
+        String inSql = String.join(",", Collections.nCopies(moviesMap.size(), "?"));
         String sqlGenres = String.format("SELECT fg.film_id AS filmId, g.id AS genreId, g.name AS genreName " +
                 "FROM films_genres AS fg " +
                 "JOIN genres AS g ON fg.genre_id = g.id " +
                 "WHERE fg.film_id IN (%s)", inSql);
-        SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sqlGenres, moviesId.toArray());
+        SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sqlGenres, moviesMap.keySet().toArray());
         while (sqlRowSet.next()) {
             int filmId = sqlRowSet.getInt("FILMID");
             int genreId = sqlRowSet.getInt("GENREID");
             String genreName = sqlRowSet.getString("GENRENAME");
             Genre genre = new Genre(genreId, genreName);
-            if (!genres.containsKey(filmId)) {
-                genres.put(filmId, new LinkedHashSet<>());
-            }
-            genres.get(filmId).add(genre);
+            moviesMap.get(filmId).getGenres().add(genre);
         }
-        for (Film film : movies) {
-            if (genres.containsKey(film.getId())) {
-                film.setGenres(genres.get(film.getId()));
-            }
-        }
-        return movies;
+        return new ArrayList<>(moviesMap.values());
     }
 
     private void insertGenres(Film film) {
