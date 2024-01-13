@@ -1,16 +1,17 @@
 package ru.yandex.practicum.filmorate.model;
 
-import lombok.Data;
+import lombok.*;
+import ru.yandex.practicum.filmorate.validator.DateBoundary;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 @Data
+@RequiredArgsConstructor
 public class Film {
     private int id;
     @NotBlank
@@ -18,10 +19,21 @@ public class Film {
     @Size(max = 200)
     @NotNull
     private final String description;
-    @NotNull
+    @DateBoundary("1895-12-28")
     private final LocalDate releaseDate;
-    @NotNull
     @Positive
     private final int duration;
-    private Set<Integer> likes = new HashSet<>();
+    @NotNull
+    private MPA mpa;
+    private LinkedHashSet<Genre> genres = new LinkedHashSet<>();
+
+    public Map<String, Object> toMap() {
+        Map<String, Object> values = new HashMap<>();
+        values.put("title", name);
+        values.put("description", description);
+        values.put("release_date", releaseDate);
+        values.put("duration", duration);
+        values.put("mpa_id", mpa.getId());
+        return values;
+    }
 }
